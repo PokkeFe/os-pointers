@@ -36,12 +36,22 @@ int main(int argc, char **argv)
     //* DEBUGGING
     // printf("Student %d - %s %s\n", student.id, student.f_name, student.l_name);
 
-    //TODO Get Assignment Count
+    // Get Assignment Count
+    student.n_assignments = promptInt("Please enter how many assignments were graded: ", 0, INT32_MAX);
 
-    //TODO Get Assignment Scores
+    // Get Assignment Scores
+    student.grades = new double[student.n_assignments];
+    for(int assignment_number = 0; assignment_number < student.n_assignments; assignment_number++) {
+        std::string message = "Please enter grade for assignment " + std::to_string(assignment_number) + ": ";
+        *(student.grades + assignment_number) = promptDouble(message, 0.0, 100.0);
+    }
 
     // Call `CalculateStudentAverage(???, ???)`
+    calculateStudentAverage((void*)&student, &average);
+
     // Output `average`
+    printf("Student: %s %s [%d]\n", student.f_name, student.l_name, student.id);
+    printf("  Average grade: %.6f\n", average);
 
     return 0;
 }
@@ -53,14 +63,21 @@ int main(int argc, char **argv)
 */
 int promptInt(std::string message, int min, int max)
 {
-    // Code to prompt user for an int
-    std::cout << message;
     int val;
     int prompting = 1;
     while(prompting == 1){
-        scanf("%d", &val);
-        if(val > min && val < max) {
-            prompting = 0;
+        std::cout << message;
+        if(scanf("%d", &val) != 1) {
+            //error
+            printf("Sorry, I cannot understand your answer\n");
+            std::cin.ignore(128, '\n');
+        } else {
+            if(val > min && val < max) {
+                prompting = 0;
+            } else {
+                printf("Sorry, I cannot understand your answer\n");
+                std::cin.ignore(128, '\n');
+            }
         }
     }
     return val;
@@ -73,8 +90,25 @@ int promptInt(std::string message, int min, int max)
 */
 double promptDouble(std::string message, double min, double max)
 {
-    //TODO: Code to prompt user for a double
-    return 0.0;
+    double val;
+    int prompting = 1;
+    while(prompting == 1) {
+        std::cout << message;
+        if(scanf("%lf", &val) != 1) {
+            //error
+            printf("Sorry, I cannot understand your answer\n");
+            std::cin.ignore(128, '\n');
+        } else {   
+            if(val >= min && val <= max) {
+                prompting = 0;
+            } else {
+                printf("Sorry, I cannot understand your answer\n");
+                std::cin.ignore(128, '\n');
+            }
+        }
+        
+    }
+    return val;
 }
 
 /*
@@ -83,5 +117,15 @@ double promptDouble(std::string message, double min, double max)
 */
 void calculateStudentAverage(void *object, double *avg)
 {
-    // Code to calculate and store average grade
+    Student* student = (Student*)object;
+
+    // For each assignment, add to sum
+    double sum = 0.0;
+    for(int grade_ind = 0; grade_ind < student->n_assignments; grade_ind++){
+        sum += *(student->grades + grade_ind);
+    }
+
+    // Set average to sum / count
+    *avg = sum / (double)student->n_assignments;
+     
 }
