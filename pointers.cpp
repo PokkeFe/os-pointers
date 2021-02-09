@@ -1,6 +1,7 @@
 // compile: g++ -std=c++11 -o pointers pointers.cpp
 #include <iostream>
 #include <string>
+#include <math.h>
 
 typedef struct Student {
     int id;
@@ -9,6 +10,9 @@ typedef struct Student {
     int n_assignments;
     double *grades;
 } Student;
+
+const int CHAR_CODE_0 = 48;
+const int CHAR_CODE_9 = 57;
 
 int promptInt(std::string message, int min, int max);
 double promptDouble(std::string message, double min, double max);
@@ -32,12 +36,15 @@ int main(int argc, char **argv)
     student.l_name = new char[128];
     printf("Please enter the student's last name: ");
     scanf("%s", student.l_name);
+    std::cin.ignore();
 
     //* DEBUGGING
     // printf("Student %d - %s %s\n", student.id, student.f_name, student.l_name);
 
     // Get Assignment Count
     student.n_assignments = promptInt("Please enter how many assignments were graded: ", 0, INT32_MAX);
+
+    std::cout << "\n";
 
     // Get Assignment Scores
     student.grades = new double[student.n_assignments];
@@ -49,9 +56,13 @@ int main(int argc, char **argv)
     // Call `CalculateStudentAverage(???, ???)`
     calculateStudentAverage((void*)&student, &average);
 
+    std::cout << "\n";
+
     // Output `average`
     printf("Student: %s %s [%d]\n", student.f_name, student.l_name, student.id);
-    printf("  Average grade: %.6f\n", average);
+
+    double rounded_average = (round(average * 10.0) / 10.0);
+    printf("  Average grade: %.1f\n", rounded_average);
 
     return 0;
 }
@@ -63,20 +74,37 @@ int main(int argc, char **argv)
 */
 int promptInt(std::string message, int min, int max)
 {
+    std::string str;
     int val;
     int prompting = 1;
     while(prompting == 1){
         std::cout << message;
-        if(scanf("%d", &val) != 1) {
-            //error
-            printf("Sorry, I cannot understand your answer\n");
-            std::cin.ignore(128, '\n');
-        } else {
-            if(val > min && val < max) {
-                prompting = 0;
-            } else {
+        std::getline(std::cin, str);
+
+        // Check each character to verify it's numeric
+        int char_count = str.size();
+        int is_numeric = 1;
+        for(int i = 0; i < char_count && is_numeric == 1; i++){
+            char c = str.at(i);
+            int c_code = (int)c;
+            if(c_code < CHAR_CODE_0 || c_code > CHAR_CODE_9) {
                 printf("Sorry, I cannot understand your answer\n");
-                std::cin.ignore(128, '\n');
+                is_numeric = 0;
+            }
+        }
+
+        // process the string into a decimal and verify it's in the proper range
+        if(is_numeric == 1){
+            if(sscanf(str.c_str(), "%d ", &val) != 1) {
+                //error
+                printf("Sorry, I cannot understand your answer\n");
+            } else {
+                if(val > min && val < max) {
+                    prompting = 0;
+                } else {
+                    printf("Sorry, I cannot understand your answer\n");
+                    std::cin.ignore(128, '\n');
+                }
             }
         }
     }
